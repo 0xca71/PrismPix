@@ -605,6 +605,24 @@ def _compose_edit_prompt(prompt_obj: dict) -> str:
             parts.append(f"ALL on-image text must be in {language}. "
                          "Do NOT use English text.")
 
+    # ── 第5.6段: 模特身份硬约束 ──
+    model_attrs = prompt_obj.get("model_attrs", "")
+    if model_attrs:
+        from ecom_image_gen.stage3 import _build_model_spec
+        try:
+            spec = _build_model_spec(model_attrs, "")
+            # 提取种族和性别行, 压缩为一句话
+            lines = [l for l in spec.split("\n") if any(
+                kw in l for kw in ("RACE/ETHNICITY:", "GENDER:", "AGE:")
+            )]
+            if lines:
+                constraint = " ".join(l.strip() for l in lines)
+                parts.append(f"MODEL IDENTITY HARD CONSTRAINT: {constraint} "
+                             "DO NOT change the model's ethnicity, gender, or age. "
+                             "DO NOT substitute with a different race.")
+        except Exception:
+            pass  # 静默失败不影响出图
+
     # ── 第6段: 平台预留空间 (主图 H1-H5) ──
     is_infographic = prompt_obj.get("is_infographic", False)
     if not is_infographic:
