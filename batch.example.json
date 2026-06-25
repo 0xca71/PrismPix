@@ -1,0 +1,15 @@
+[
+  {
+    "sku": "DRESS_A001",
+    "image": "samples/dress.jpg",
+    "category": "女装连衣裙",
+    "style": "简约高级",
+    "model_attrs": "亚洲女性, 25 岁, 自然妆"
+  },
+  {
+    "sku": "SHOE_B002",
+    "image": "https://example.com/shoe.png",
+    "category": "运动鞋",
+    "style": "街头潮流"
+  }
+]

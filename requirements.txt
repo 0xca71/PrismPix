@@ -1,0 +1,6 @@
+# 核心依赖
+openai>=1.30.0        # OpenAI SDK v1.x (chat / vision / images)
+requests>=2.31.0      # 仅当图像 API 返回 url 时下载图片需要
+
+# 可选: Web 表单模式 (--web)
+flask>=3.0.0

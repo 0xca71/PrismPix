@@ -1,0 +1,31 @@
+# ── 敏感配置 (含真实 API Key) ──
+.env
+
+# ── Python 虚拟环境 ──
+.venv/
+venv/
+env/
+
+# ── Python 字节码 & 缓存 ──
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ── 生成产物 (用户的输出图片和分析结果) ──
+output/
+
+# ── macOS ──
+.DS_Store
+
+# ── IDE ──
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── 临时文件 ──
+*.log
+tmp/
+temp/
