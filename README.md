@@ -55,53 +55,33 @@ output/
 ## 安装
 
 ```bash
-pip install -r requirements.txt       # openai + requests; flask 仅 --web 需要
+pip install -r requirements.txt
 cp .env.example .env                  # 填入 API Key / Base URL / 模型
 ```
 
 ## 用法
 
 ```bash
-# 单 SKU — 完整流程 (分析→策略→prompt→出图)
-python main.py --image product.jpg --sku DRESS_A001 \
-  --category "女装连衣裙" --style "简约高级" --model-attrs "亚洲女性 25岁"
-
-# 仅生成 Prompt (不出图)
-python main.py --image product.jpg --sku DEMO --no-images
-
-# 交互式输入 (不带 --image 自动进入问答)
+# 启动 Web 服务
 python main.py
-
-# Multi-SKU 批处理
-python main.py --batch batch.example.json
-
-# Web 表单 (浏览器打开 http://127.0.0.1:8000)
-python main.py --web
-
-# 强制重算 (忽略已有缓存)
-python main.py --image product.jpg --sku DEMO --force --no-cache
+# 浏览器打开 http://127.0.0.1:8000
 ```
 
-### 关键参数
+所有配置通过 `.env` 文件或环境变量设置，详见 `.env.example`。
 
-配置优先级: **CLI > 环境变量 > .env > 默认值**
+### 关键配置项
 
-| 参数 | 环境变量 | 说明 |
-|------|---------|------|
-| `--api-key` | `OPENAI_API_KEY` / `API_KEY` | API Key |
-| `--base-url` | `BASE_URL` | 接入地址 (OpenAI / OneAPI / NewAPI / OpenRouter) |
-| `--model` | `MODEL_NAME` | 文本/视觉模型 (需 vision 能力) |
-| `--vision-model` | `VISION_MODEL` | Stage1 视觉模型 (可选) |
-| `--text-model` | `TEXT_MODEL` | Stage2/3 文本模型 (可选) |
-| `--image-model` | `IMAGE_MODEL` | 图像模型 (gpt-image-1/2) |
-| `--output` | `OUTPUT_ROOT` | 输出根目录 (默认 `output`) |
-| `--concurrency` | `CONCURRENCY` | 图片并发数 (默认 4) |
-| `--max-retries` | `MAX_RETRIES` | 失败重试 (≥2, 默认 3) |
-| `--force` | — | 忽略已有结果强制重算 |
-| `--no-cache` | — | 禁用本地 prompt 缓存 |
-| `--no-images` | — | 仅产出 prompt, 不调用图像 API |
-| `--web` | — | 启动 Web 表单 (默认 http://127.0.0.1:8000) |
-| `--batch` | — | 批处理 JSON 文件路径 |
+| 环境变量 | 默认值 | 说明 |
+|---------|--------|------|
+| `OPENAI_API_KEY` | (必填) | API Key |
+| `BASE_URL` | `https://api.openai.com/v1` | API 接入地址 |
+| `MODEL_NAME` | `gpt-4o` | 文本/视觉模型 |
+| `IMAGE_MODEL` | `gpt-image-1` | 图像生成模型 |
+| `WEB_HOST` | `127.0.0.1` | 监听地址 |
+| `WEB_PORT` | `8000` | 监听端口 |
+| `REQUEST_TIMEOUT` | `600` | LLM 超时 (秒) |
+| `CONCURRENCY` | `4` | 图片并发生成数 |
+| `FORCE` | `false` | 强制重算忽略缓存 |
 
 ## 14 个图片模块
 
@@ -182,11 +162,14 @@ ecom_image_gen/
     image_gen.py            # images.edit 出图 + 并发生成
     workspace.py            # SKU 工作区 + 产物落盘
     runner.py               # 单 SKU / 批处理编排
-    web.py                  # Flask Web 表单
-    cli.py                  # CLI 参数 + 交互式输入
+    web.py                  # Web 三栏 SPA
 main.py                     # 入口 (96 行)
 prompt_templates/           # 25 个场景模板 JSON
 ```
+
+## 致谢
+
+`prompt_templates/` 目录下的 25 个场景模板 JSON 完全引用自 [liangdabiao/ecom-details-image](https://github.com/liangdabiao/ecom-details-image) 项目，在此致以诚挚感谢。
 
 ## 许可
 
