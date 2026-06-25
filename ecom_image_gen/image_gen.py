@@ -96,13 +96,44 @@ def generate_all_images(
 ) -> dict:
     """并发生成电商图; 已存在的图自动跳过 (断点续跑)。
 
-    所有图片都以同一张原始产品图为底图, 通过 images.edit 生成。
+    生成前先产出「产品身份证」参考图 (正面/背面/侧面 + 3 细节),
+    后续所有 H/D 图以此参考图为底图, 确保产品一致性。
 
     Args:
         progress_callback: 可选, 每完成一张图时调用 callback(code, status, path)。
-    Returns:
-        统计 dict: {"generated": int, "skipped": int, "failed": int}
     """
+    # ── Step 0: 产品身份证参考图 ──
+    ref_path = ws / "product_ref.png"
+    ref_exists = ref_path.exists() and ref_path.stat().st_size > 0 and not cfg.force
+
+    if not ref_exists:
+        LOG.info("生成产品身份证参考图 (正/背/侧 + 3 细节)...")
+        ref_prompt = _build_product_ref_prompt(prompts)
+        try:
+            generate_image(
+                client, cfg, ref_prompt, product_image, ref_path,
+                desc="product_ref",
+            )
+            if progress_callback:
+                try:
+                    progress_callback("product_ref", "done", str(ref_path))
+                except Exception:
+                    pass
+        except Exception as e:
+            LOG.warning("产品参考图生成失败: %s, 回退到原始产品图", e)
+            ref_path = None  # 回退
+    else:
+        LOG.info("复用已有产品参考图: %s", ref_path)
+        if progress_callback:
+            try:
+                progress_callback("product_ref", "cached", str(ref_path))
+            except Exception:
+                pass
+
+    # 底图: 优先用参考图, 失败则用原图
+    base_image = str(ref_path) if ref_path and ref_path.exists() else product_image
+
+    # ── Step 1: 主图 & 详情图 ──
     todo: list[tuple[str, dict, Path]] = []
     skipped = 0
 
@@ -117,13 +148,14 @@ def generate_all_images(
         LOG.info("断点续跑: 跳过 %d 张已生成图片", skipped)
     if not todo:
         LOG.info("全部图片已存在, 无需生成")
-        return {"generated": 0, "skipped": skipped, "failed": 0}
+        return {"generated": 0, "skipped": skipped, "failed": 0,
+                "product_ref": str(ref_path) if ref_path else ""}
 
-    results = {"generated": 0, "skipped": skipped, "failed": 0}
+    results = {"generated": 0, "skipped": skipped, "failed": 0,
+               "product_ref": str(ref_path) if ref_path else ""}
     lock = threading.Lock()
-    cb = progress_callback  # capture locally for closure
+    cb = progress_callback
 
-    # 已跳过的图也通知前端 (立即显示)
     if cb and skipped:
         for spec in PROMPT_MODULES:
             p = ws / f"{spec.code}.png"
@@ -136,7 +168,7 @@ def generate_all_images(
     def _work(code: str, prompt_obj: dict, out_path: Path) -> None:
         try:
             generate_image(
-                client, cfg, prompt_obj, product_image, out_path,
+                client, cfg, prompt_obj, base_image, out_path,
                 desc=f"img:{code}",
             )
             with lock:
@@ -169,6 +201,63 @@ def generate_all_images(
         results["failed"],
     )
     return results
+
+
+def _build_product_ref_prompt(prompts: dict) -> dict:
+    """构建产品身份证 6 面板参考图 prompt。
+
+    上方: 正面人台 | 背面 | 侧面
+    下方: 材质纹理特写 | 工艺/五金特写 | 独特设计特征特写
+    """
+    ref_text = (
+        "Product identity reference sheet. Six panels in one image. "
+        "Size 2048x1536 or larger. Clean studio background #FFFFFF. "
+        "Professional ecommerce product photography lighting 5500K, even illumination. "
+        ""
+        "TOP ROW (3 panels, equal width): "
+        "Left: product front view on invisible mannequin/stand, "
+        "showing full silhouette and front details. "
+        "Center: product back view, showing back design and rear details. "
+        "Right: product side profile, showing depth and side structure. "
+        ""
+        "BOTTOM ROW (3 panels, equal width): "
+        "Left: extreme macro close-up of material texture "
+        "(fabric weave/leather grain/surface finish). "
+        "Center: macro close-up of craftsmanship detail "
+        "(stitching/buttons/zipper/hardware/closure). "
+        "Right: macro close-up of unique design feature "
+        "(label/logo/pattern/special element that differentiates this product). "
+        ""
+        "ALL SAME PRODUCT across all 6 panels. "
+        "SAME lighting, SAME white balance, SAME exposure. "
+        "This reference will be used as the base for all subsequent "
+        "hero and detail image generation — product MUST be identical "
+        "in every panel. DO NOT change product color, shape, or material. "
+        ""
+        "No text, no labels, no watermarks, no decorative elements."
+    )
+    return {
+        "prompt": ref_text,
+        "style": "professional ecommerce product reference photography",
+        "style_lock": prompts.get("H1", {}).get("style_lock", ""),
+        "camera": "fixed studio camera, consistent framing across all 6 panels",
+        "lighting": "even studio lighting 5500K, consistent across all panels",
+        "composition": "6-panel grid, 2 rows × 3 columns, equal panels, "
+                       "top=front|back|side, bottom=texture|craft|detail",
+        "background": "#FFFFFF clean seamless studio background",
+        "color_control": ["#FFFFFF", "#2D2D2D"],
+        "product_lock_rules": [
+            "preserve product exactly — same shape, color, material in all panels",
+        ],
+        "product_ratio": "product fills 60-70% of each panel",
+        "whitespace_pct": "30%",
+        "is_infographic": False,
+        "negative_constraints": [
+            "no text, labels, watermarks",
+            "no decorative elements",
+            "no different products between panels",
+        ],
+    }
 
 
 def generate_lookbook(

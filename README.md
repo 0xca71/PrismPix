@@ -48,8 +48,9 @@ output/
     prompts.json         # Stage3 — 14 条 prompt (可复用, 含 Style Lock)
     prompts.md           # 人类可读版 (含模块参数表 + Style Lock)
     prompt_cache.json    # 本地 LLM 调用缓存 (避免重复计费)
-    H1.png ... H5.png    # 主图 (1:1, 白底/场景/特写/多角度)
+    H1.png ... H5.png    # 主图 (1:1, 基于产品身份证参考图生成)
     D1.png ... D9.png    # 详情图 (2:3, 强制信息图格式)
+    product_ref.png      # 产品身份证 (正/背/侧 + 3细节, 6面板)
     M1.png ... M5.png    # 模特套图 (lookbook 模式, 5 角度)
     lookbook_ref.png     # 三面参考图 (正面+背面+侧面, 仅 lookbook)
 ```

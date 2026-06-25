@@ -588,11 +588,15 @@ function pollGenerate() {
       if (data.status === 'done') {
         stopPoll();
         document.getElementById('genBar').style.width = '100%';
-        // lookbook 模式追加三面参考图
+        // 参考图追加
         const modeEl2 = document.getElementById('generation_mode');
         if (modeEl2?.value === 'lookbook' && wsPath && !renderedImageCodes['lookbook_ref']) {
           renderedImageCodes['lookbook_ref'] = true;
           addImageToGrid('lookbook_ref', wsPath, 'done');
+        }
+        if (modeEl2?.value !== 'lookbook' && wsPath && !renderedImageCodes['product_ref']) {
+          renderedImageCodes['product_ref'] = true;
+          addImageToGrid('product_ref', wsPath, 'done');
         }
         document.getElementById('resultFoot').style.display = 'block';
       } else if (data.status === 'failed') {
@@ -628,7 +632,8 @@ function addImageToGrid(code, wsPath, status) {
 
   const imgSrc = '/api/image?ws=' + encodeURIComponent(wsPath) + '&code=' + code;
   const div = document.createElement('div');
-  div.className = 'img-item' + (code === 'lookbook_ref' ? ' ref-row' : '');
+  const isRef = code === 'lookbook_ref' || code === 'product_ref';
+  div.className = 'img-item' + (isRef ? ' ref-row' : '');
   div.onclick = function() {
     const idx = state.lightboxImages.findIndex(i => i.code === code);
     if (idx >= 0) openLightbox(idx);
@@ -640,7 +645,8 @@ function addImageToGrid(code, wsPath, status) {
   img.onerror = function() { this.parentElement.style.display = 'none'; };
   const label = document.createElement('span');
   label.className = 'label';
-  label.textContent = (code === 'lookbook_ref' ? '📐参考图' : code) + (status === 'cached' ? ' ↻' : '');
+  const labelMap = {lookbook_ref: '📐参考图', product_ref: '🆔产品证'};
+  label.textContent = (labelMap[code] || code) + (status === 'cached' ? ' ↻' : '');
   div.appendChild(img);
   div.appendChild(label);
   grid.appendChild(div);
@@ -778,14 +784,17 @@ function renderResults(result) {
 
   // Build image list from workspace path
   const possibleCodes = MODULE_ORDER.filter(c => state.prompts && state.prompts[c]);
-  // lookbook 模式: 前置三面参考图
+  // 参考图前置
   const modeEl = document.getElementById('generation_mode');
   if (modeEl?.value === 'lookbook') {
     possibleCodes.unshift('lookbook_ref');
+  } else {
+    possibleCodes.unshift('product_ref');
   }
+  const labelMap = {lookbook_ref: '📐参考图', product_ref: '🆔产品证'};
   state.lightboxImages = possibleCodes.map(code => ({
     src: '/api/image?ws=' + encodeURIComponent(ws) + '&code=' + code,
-    label: code === 'lookbook_ref' ? '📐参考图' : code
+    label: labelMap[code] || code
   }));
 
   let html = '<div class="status-msg ok">✓ 生成完成</div>';
