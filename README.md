@@ -43,14 +43,18 @@
 ```
 output/
   SKU_NAME/
-    product.json         # Stage1 — 产品结构分析
-    campaign.json        # Stage2 — 营销策略
-    prompts.json         # Stage3 — 14 条 prompt (可复用)
-    prompts.md           # 人类可读版 (含 Style Lock + 参数表)
-    prompt_cache.json    # 本地 LLM 调用缓存
-    H1.png ... H5.png    # 主图 (1:1)
-    D1.png ... D9.png    # 详情图 (2:3, 信息图格式)
+    product.json         # Stage1 — 产品结构分析 (材质/颜色/结构/约束)
+    campaign.json        # Stage2 — 营销策略 (卖点/痛点/场景/信任元素)
+    prompts.json         # Stage3 — 14 条 prompt (可复用, 含 Style Lock)
+    prompts.md           # 人类可读版 (含模块参数表 + Style Lock)
+    prompt_cache.json    # 本地 LLM 调用缓存 (避免重复计费)
+    H1.png ... H5.png    # 主图 (1:1, 白底/场景/特写/多角度)
+    D1.png ... D9.png    # 详情图 (2:3, 强制信息图格式)
+    M1.png ... M5.png    # 模特套图 (lookbook 模式, 5 角度)
+    lookbook_ref.png     # 三面参考图 (正面+背面+侧面, 仅 lookbook)
 ```
+
+> 完整产物示例见 [`samples/WYLYQ003/`](samples/WYLYQ003/) — 包含 product.json、campaign.json、prompts.json、prompts.md。
 
 ## 安装
 
