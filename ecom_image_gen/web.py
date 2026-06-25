@@ -524,6 +524,7 @@ async function doGenerateImages() {
   fd.set('prompts', JSON.stringify(state.prompts));
   fd.set('generation_mode', document.getElementById('generation_mode').value);
   fd.set('sku', document.getElementById('sku').value || 'DEMO');
+  fd.set('force', document.getElementById('forceRegen').checked ? '1' : '0');
   // Pass model_attrs for lookbook mode
   ['model_region','model_gender','model_age','model_skin','model_body',
    'model_scene','shooting_style','face_visible'].forEach(id => {

@@ -59,7 +59,8 @@ def run_sku(
     _progress("start", sku=sku)
 
     ws = build_sku_workspace(cfg, sku)
-    cache = PromptCache(ws / "prompt_cache.json", enabled=cfg.use_prompt_cache)
+    cache = PromptCache(ws / "prompt_cache.json",
+                        enabled=cfg.use_prompt_cache and not cfg.force)
     client = build_client(cfg)
 
     # ---- Stage 1: 复用已有 product.json (断点续跑) ----
