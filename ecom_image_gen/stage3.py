@@ -362,7 +362,7 @@ def stage3_generate_prompts(
              type(data).__name__, raw_keys, raw_json_snip)
 
     # 注入 Style Lock 到每条 prompt 的 style 字段
-    prompts = _normalize_prompts(data, style_lock_text, generation_mode)
+    prompts = _normalize_prompts(data, style_lock_text, generation_mode, language)
     empty_codes = [c for c, p in prompts.items() if not p.get("prompt", "").strip()]
     if empty_codes:
         LOG.warning("Stage3: %d/%d prompt 为空 (兜底已激活): %s",
@@ -392,7 +392,7 @@ def _render_spec_table() -> str:
     return "\n".join(lines)
 
 
-def _normalize_prompts(raw: dict, style_lock: str = "", generation_mode: str = "full") -> dict:
+def _normalize_prompts(raw: dict, style_lock: str = "", generation_mode: str = "full", language: str = "") -> dict:
     """校验/补全模块 prompt, 注入 Style Lock 和铁律参数。
 
     Args:
@@ -498,6 +498,7 @@ def _normalize_prompts(raw: dict, style_lock: str = "", generation_mode: str = "
             or _default_colors(spec),
             "product_lock_rules": lock_rules,
             "style_lock": style_lock,
+            "language": language,
             "negative_constraints": item.get("negative_constraints") or spec.negative_constraints,
             "product_ratio": spec.product_ratio,
             "whitespace_pct": spec.whitespace_pct,

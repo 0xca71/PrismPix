@@ -573,6 +573,38 @@ def _compose_edit_prompt(prompt_obj: dict) -> str:
             + ", ".join(colors) + "."
         )
 
+    # ── 第5.5段: 图片内文字语言 ──
+    language = prompt_obj.get("language", "")
+    if language and language != "英文":
+        lang_map = {
+            "中文": "ALL on-image text must be in Simplified Chinese. "
+                    "Wrap Chinese text with「」quotation marks. "
+                    "Do NOT use English text on images.",
+            "日文": "ALL on-image text must be in Japanese. "
+                    "Do NOT use English or Chinese text.",
+            "韩文": "ALL on-image text must be in Korean. "
+                    "Do NOT use English or Chinese text.",
+            "法文": "ALL on-image text must be in French. "
+                    "Accents (é, è, ê, à, ç) must render correctly.",
+            "西班牙文": "ALL on-image text must be in Spanish. "
+                    "Accents and ñ must render correctly.",
+            "德文": "ALL on-image text must be in German. "
+                    "Umlauts (ä, ö, ü) and ß must render correctly.",
+            "俄文": "ALL on-image text must be in Russian (Cyrillic).",
+            "阿拉伯文": "ALL on-image text must be in Arabic (RTL).",
+            "葡萄牙文": "ALL on-image text must be in Portuguese.",
+            "意大利文": "ALL on-image text must be in Italian.",
+            "泰文": "ALL on-image text must be in Thai.",
+            "越南文": "ALL on-image text must be in Vietnamese.",
+            "印尼文": "ALL on-image text must be in Bahasa Indonesia.",
+            "土耳其文": "ALL on-image text must be in Turkish.",
+        }
+        if language in lang_map:
+            parts.append(lang_map[language])
+        else:
+            parts.append(f"ALL on-image text must be in {language}. "
+                         "Do NOT use English text.")
+
     # ── 第6段: 平台预留空间 (主图 H1-H5) ──
     is_infographic = prompt_obj.get("is_infographic", False)
     if not is_infographic:
