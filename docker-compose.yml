@@ -1,0 +1,15 @@
+services:
+  prismpix:
+    image: ghcr.io/0xca71/prismpix:latest
+    container_name: prismpix
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    env_file:
+      - .env
+    environment:
+      WEB_HOST: 0.0.0.0
+      WEB_PORT: 8000
+      OUTPUT_ROOT: /app/output
+    volumes:
+      - ./output:/app/output
