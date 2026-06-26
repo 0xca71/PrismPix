@@ -1,0 +1,15 @@
+.git
+.github
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+.env.*
+!.env.docker.example
+output
+samples
+.venv
+venv
+.DS_Store
